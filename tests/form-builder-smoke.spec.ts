@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test("builds and exports a schema draft", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.getByRole("heading", { name: "Compose forms with a quieter, native feel." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Form Builder" })).toBeVisible();
 
   await page.getByLabel("Form title").fill("Launch Survey");
   await page.getByRole("button", { name: "Add field" }).click();
@@ -15,6 +15,10 @@ test("builds and exports a schema draft", async ({ page }) => {
   await page.getByRole("tab", { name: "JSON Schema" }).click();
   await expect(page.getByTestId("schema-output")).toContainText('"title": "Launch Survey"');
   await expect(page.getByTestId("schema-output")).toContainText('"priority"');
+
+  await page.getByRole("tab", { name: "Preview" }).click();
+  await page.getByTestId("preview-panel").getByLabel("Bug").check();
+  await expect(page.getByTestId("preview-panel").getByText("Bug Details")).toBeVisible();
 
   await page.getByRole("button", { name: "Copy JSON" }).click();
   await expect(page.getByRole("button", { name: "Copied" })).toBeVisible();

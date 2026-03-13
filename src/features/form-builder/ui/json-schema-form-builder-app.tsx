@@ -20,12 +20,13 @@ import {
   type FormDefinition,
 } from "../model";
 import { FieldEditor } from "./field-editor";
-import { PreviewField } from "./preview-field";
+import { PreviewField, type PreviewScope, type PreviewValue } from "./preview-field";
 
 export function JsonSchemaFormBuilderApp() {
   const seedForm = useMemo(() => createInitialFormDefinition(), []);
   const [form, dispatch] = useReducer(formBuilderReducer, seedForm, loadStoredFormDefinition);
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
+  const [previewValues, setPreviewValues] = useState<PreviewScope>({});
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -74,54 +75,32 @@ export function JsonSchemaFormBuilderApp() {
     clearStoredFormDefinition();
     dispatch({ type: "reset", form: createInitialFormDefinition() });
     setCopyState("idle");
+    setPreviewValues({});
   }
 
   function updateMeta(patch: Partial<Pick<FormDefinition, "title" | "description">>) {
     dispatch({ type: "update_meta", patch });
   }
 
+  function setPreviewValue(key: string, value: PreviewValue | undefined) {
+    setPreviewValues((current: PreviewScope) => {
+      if (value === undefined) {
+        const next = { ...current };
+        delete next[key];
+        return next;
+      }
+
+      return {
+        ...current,
+        [key]: value,
+      };
+    });
+  }
+
   return (
     <div className="min-h-screen px-4 py-6 md:px-8 md:py-10">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="overflow-hidden rounded-[32px] border border-slate-300/70 bg-white/74 px-6 py-6 shadow-[0_18px_60px_rgba(15,23,42,0.09)] backdrop-blur-2xl"
-        >
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div className="space-y-3">
-              <div className="inline-flex items-center rounded-full border border-slate-300/75 bg-white/88 px-3 py-1 text-[11px] font-semibold tracking-[0.18em] text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]">
-                Form Builder
-              </div>
-              <div className="space-y-2">
-                <h1 className="text-4xl font-semibold tracking-tight text-foreground md:text-[3.3rem]">
-                  Compose forms with a quieter, native feel.
-                </h1>
-                <p className="max-w-3xl text-sm leading-6 text-muted-foreground md:text-[15px]">
-                  Build a form visually, preview how it reads, and export Draft 2020-12 JSON Schema with section
-                  metadata and simple equality-based conditions. The interface now follows a more Apple-like visual
-                  system with restrained materials, softer hierarchy, and content-first spacing.
-                </p>
-              </div>
-            </div>
-            <div className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-3">
-              <div className="rounded-[24px] border border-slate-300/75 bg-white/86 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]">
-                <div className="text-[11px] font-semibold tracking-[0.16em] text-primary">Scope</div>
-                <div className="mt-2 font-semibold text-foreground">Client-only MVP</div>
-              </div>
-              <div className="rounded-[24px] border border-slate-300/75 bg-white/86 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]">
-                <div className="text-[11px] font-semibold tracking-[0.16em] text-primary">Persistence</div>
-                <div className="mt-2 font-semibold text-foreground">Autosaved locally</div>
-              </div>
-              <div className="rounded-[24px] border border-slate-300/75 bg-white/86 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]">
-                <div className="text-[11px] font-semibold tracking-[0.16em] text-primary">Export</div>
-                <div className="mt-2 font-semibold text-foreground">Draft 2020-12</div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+      <div className="mx-auto max-w-[1720px]">
+        <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
             <Card className="overflow-hidden bg-white/84">
               <CardHeader className="gap-4">
@@ -147,7 +126,7 @@ export function JsonSchemaFormBuilderApp() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="form-title">Form title</Label>
                     <Input
@@ -237,7 +216,7 @@ export function JsonSchemaFormBuilderApp() {
                     <CardTitle>{form.title || "Untitled form"}</CardTitle>
                     <CardDescription>{form.description || "No description provided."}</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-5">
+                  <CardContent className="space-y-5" data-testid="preview-panel">
                     {form.fields.map((field, index) => (
                       <div key={field.id} className="space-y-3">
                         {index > 0 ? (
@@ -245,7 +224,12 @@ export function JsonSchemaFormBuilderApp() {
                             <ChevronRight className="h-3 w-3" /> Next block
                           </div>
                         ) : null}
-                        <PreviewField field={field} />
+                        <PreviewField
+                          field={field}
+                          fieldIndex={index}
+                          scopeValues={previewValues}
+                          setScopeValue={setPreviewValue}
+                        />
                       </div>
                     ))}
                   </CardContent>

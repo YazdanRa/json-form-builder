@@ -80,4 +80,20 @@ describe("JsonSchemaFormBuilderApp", () => {
     expect(within(cards[0]).getByDisplayValue("Request Type")).toBeInTheDocument();
     expect(within(cards[1]).getByDisplayValue("Contact Details")).toBeInTheDocument();
   });
+
+  it("uses the preview as an interactive form and applies conditional visibility", async () => {
+    const user = userEvent.setup();
+    render(<JsonSchemaFormBuilderApp />);
+
+    const previewPanel = screen.getByTestId("preview-panel");
+    expect(within(previewPanel).queryByText("Bug Details")).not.toBeInTheDocument();
+
+    await user.click(within(previewPanel).getByLabelText("Bug"));
+
+    expect(within(previewPanel).getByText("Bug Details")).toBeInTheDocument();
+
+    const fullNameInput = within(previewPanel).getByPlaceholderText("John Appleseed");
+    await user.type(fullNameInput, "Taylor");
+    expect(fullNameInput).toHaveValue("Taylor");
+  });
 });
