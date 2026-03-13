@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 28% 96%;
+    --foreground: 220 29% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 29% 10%;
+    --muted: 220 20% 92%;
+    --muted-foreground: 215 16% 31%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 29% 10%;
+    --border: 220 18% 80%;
+    --input: 220 18% 80%;
+    --primary: 211 100% 46%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 214 18% 89%;
+    --secondary-foreground: 220 24% 18%;
+    --accent: 212 100% 96%;
+    --accent-foreground: 220 29% 12%;
+    --destructive: 3 100% 59%;
+    --destructive-foreground: 0 0% 100%;
+    --ring: 211 100% 46%;
+    --radius: 1.35rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    font-family:
+      -apple-system,
+      BlinkMacSystemFont,
+      "SF Pro Text",
+      "SF Pro Display",
+      "Helvetica Neue",
+      "Segoe UI",
+      sans-serif;
+  }
+
+  body {
+    @apply min-h-screen bg-background text-foreground antialiased;
+    background-image:
+      radial-gradient(circle at top center, rgba(64, 156, 255, 0.14), transparent 28rem),
+      radial-gradient(circle at bottom left, rgba(191, 216, 255, 0.2), transparent 22rem),
+      linear-gradient(180deg, rgba(244, 247, 252, 0.99), rgba(232, 237, 245, 0.98));
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family:
+      -apple-system,
+      BlinkMacSystemFont,
+      "SF Pro Display",
+      "Helvetica Neue",
+      sans-serif;
+    letter-spacing: -0.03em;
+  }
+
+  button,
+  input,
+  textarea,
+  [role="tab"] {
+    @apply outline-none;
+  }
+}
+
+#root {
+  min-height: 100vh;
+}
