@@ -5,11 +5,6 @@ export function getFlatDependencyOptions(fields: FormField[], parentPrefix = "")
   const result: DependencyOption[] = [];
 
   fields.forEach((field) => {
-    if (field.type === "section") {
-      result.push(...getFlatDependencyOptions(field.children, parentPrefix));
-      return;
-    }
-
     const key = toSafeKey(field.key || field.title || field.id);
     const path = parentPrefix ? `${parentPrefix}.${key}` : key;
     result.push({

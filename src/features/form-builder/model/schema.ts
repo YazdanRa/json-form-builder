@@ -1,4 +1,4 @@
-import { resolveFieldKey, toSafeKey } from "./factories";
+import { resolveFieldKey } from "./factories";
 import type {
   FormDefinition,
   FormField,
@@ -31,14 +31,6 @@ function buildFieldCollection(fields: FormField[]) {
   const allOf: JsonSchemaCondition[] = [];
 
   fields.forEach((field, index) => {
-    if (field.type === "section") {
-      const nested = buildFieldCollection(field.children);
-      Object.assign(properties, nested.properties);
-      required.push(...nested.required);
-      allOf.push(...nested.allOf);
-      return;
-    }
-
     const key = resolveFieldKey(field, index);
     const base: JsonSchemaNode = {
       title: field.title || "Untitled question",
@@ -155,15 +147,5 @@ export function buildSchema(form: FormDefinition): JsonSchemaDocument {
     properties: root.properties,
     required: root.required.length ? root.required : undefined,
     allOf: root.allOf.length ? root.allOf : undefined,
-    "x-sections": form.fields
-      .filter((field) => field.type === "section")
-      .map((section) => ({
-        key: toSafeKey(section.key || section.title, "section"),
-        title: section.title,
-        description: section.description,
-        fields: section.children
-          .filter((child) => child.type !== "section")
-          .map((child, index) => resolveFieldKey(child, index)),
-      })),
   };
 }

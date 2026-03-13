@@ -6,3 +6,4 @@
 - When the user asks for more visibility after a theme pass, raise contrast at the token and shared-component level first: darker foregrounds, stronger borders, and more opaque materials. Do not try to solve it with isolated one-off color tweaks.
 - When the user asks to undo the last visual change, revert only the latest styling delta and preserve the previously accepted theme direction.
 - When the user asks for commits at each step, create a checkpoint commit before new edits and keep subsequent requests split into separately scoped commits instead of batching everything into one final commit.
+- When a builder-only grouping type does not map to a real JSON Schema primitive and the user tightens the export contract, remove the pseudo-type from the model and migrate saved drafts to the nearest real schema type instead of preserving custom grouping metadata.

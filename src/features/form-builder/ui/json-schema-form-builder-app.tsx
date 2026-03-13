@@ -108,7 +108,7 @@ export function JsonSchemaFormBuilderApp() {
                   <div>
                     <CardTitle className="text-[2rem]">Form Builder</CardTitle>
                     <CardDescription>
-                      Edit the form definition, manage nested fields, and keep the export safe with inline validation.
+                      Edit the form definition, manage nested object fields, and keep the export safe with inline validation.
                     </CardDescription>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -194,9 +194,9 @@ export function JsonSchemaFormBuilderApp() {
                     type="button"
                     variant="outline"
                     className="border-dashed"
-                    onClick={() => dispatch({ type: "add_field", fieldType: "section" })}
+                    onClick={() => dispatch({ type: "add_field", fieldType: "object" })}
                   >
-                    <Plus className="h-4 w-4" /> Add section
+                    <Plus className="h-4 w-4" /> Add object
                   </Button>
                 </div>
               </CardContent>
@@ -244,7 +244,7 @@ export function JsonSchemaFormBuilderApp() {
                       <CardTitle>Generated JSON Schema</CardTitle>
                     </div>
                     <CardDescription>
-                      Draft 2020-12 plus UI metadata for sections, placeholders, and simple conditional hints.
+                      Draft 2020-12 plus UI metadata for placeholders and simple conditional hints.
                     </CardDescription>
                   </CardHeader>
                   <CardContent>

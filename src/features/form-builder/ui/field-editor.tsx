@@ -62,7 +62,7 @@ export function FieldEditor({
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
             <GripVertical className="h-4 w-4" />
-            <span>{field.type === "section" ? "Section" : "Field"}</span>
+            <span>{field.type === "object" ? "Object" : field.type === "array_object" ? "Object List" : "Field"}</span>
           </div>
           <div className="flex gap-2">
             <Button
@@ -290,11 +290,7 @@ export function FieldEditor({
               <div>
                 <div className="text-sm font-semibold">Nested fields</div>
                 <div className="text-xs text-muted-foreground">
-                  {field.type === "section"
-                    ? "Fields inside this section."
-                    : field.type === "object"
-                      ? "Properties inside this object."
-                      : "Fields for each array item."}
+                  {field.type === "object" ? "Properties inside this object." : "Fields for each array item."}
                 </div>
               </div>
               <Button type="button" variant="outline" size="sm" onClick={onAddChild}>

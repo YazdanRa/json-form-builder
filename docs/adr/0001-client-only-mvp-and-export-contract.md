@@ -18,12 +18,11 @@ The project starts from an empty repository and needs to ship a focused MVP quic
   - `x-placeholder`
   - `x-ui`
   - `x-conditions`
-  - `x-sections`
 
 ## Export Contract
 
 - Root output is always an object schema with Draft 2020-12 `$schema`
-- `section` is preserved only in top-level `x-sections` metadata and flattened into the nearest object scope
+- `object` and `array_object` are the only grouping primitives and both map to real JSON Schema structure
 - Conditional rules compile into `allOf` with `if/then` equality checks
 - Duplicate resolved keys block export instead of producing lossy or ambiguous schema output
 

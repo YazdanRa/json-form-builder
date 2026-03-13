@@ -2,18 +2,7 @@ import { resolveFieldKey } from "./factories";
 import type { FormDefinition, FormField, ValidationIssue, ValidationResult } from "./types";
 
 function flattenScopeFields(fields: FormField[]): Array<{ field: FormField; index: number }> {
-  const flattened: Array<{ field: FormField; index: number }> = [];
-
-  fields.forEach((field, index) => {
-    if (field.type === "section") {
-      flattened.push(...flattenScopeFields(field.children));
-      return;
-    }
-
-    flattened.push({ field, index });
-  });
-
-  return flattened;
+  return fields.map((field, index) => ({ field, index }));
 }
 
 function validateCollection(fields: FormField[], scopePath: string): ValidationIssue[] {

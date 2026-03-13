@@ -9,8 +9,7 @@ export type FieldType =
   | "enum"
   | "object"
   | "array_string"
-  | "array_object"
-  | "section";
+  | "array_object";
 
 export interface ConditionRule {
   id: string;
@@ -89,10 +88,4 @@ export interface JsonSchemaDocument extends JsonSchemaNode {
   description?: string;
   type: "object";
   properties: Record<string, JsonSchemaNode>;
-  "x-sections": Array<{
-    key: string;
-    title: string;
-    description: string;
-    fields: string[];
-  }>;
 }

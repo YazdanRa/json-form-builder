@@ -38,8 +38,8 @@ bunx playwright install chromium
 
 ## Product Scope
 
-- Build forms with sections, nested objects, arrays, enum choices, and simple conditional logic
-- Preview the rendered structure in-app
+- Build forms with nested objects, arrays, enum choices, and simple conditional logic
+- Preview the rendered structure interactively in-app
 - Copy or export generated JSON Schema
 - Persist a single working draft locally in the browser
 

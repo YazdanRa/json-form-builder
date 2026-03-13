@@ -14,7 +14,7 @@ function buildSingleFieldForm(fieldType: FieldType): FormDefinition {
     field.options = ["Alpha", "Beta"];
   }
 
-  if (fieldType === "object" || fieldType === "array_object" || fieldType === "section") {
+  if (fieldType === "object" || fieldType === "array_object") {
     field.children = [createField("string")];
     field.children[0].key = "child_name";
     field.children[0].title = "Child Name";
@@ -44,14 +44,6 @@ describe("buildSchema", () => {
     const schema = buildSchema(buildSingleFieldForm(fieldType));
     const key = `${fieldType}_field`;
     expect(schema.properties[key]?.type).toBe(expectedType);
-  });
-
-  it("flattens sections into properties and preserves section metadata", () => {
-    const schema = buildSchema(buildSingleFieldForm("section"));
-
-    expect(schema.properties.child_name).toBeDefined();
-    expect(schema["x-sections"]).toHaveLength(1);
-    expect(schema["x-sections"][0]?.fields).toEqual(["child_name"]);
   });
 
   it("compiles required fields and conditional rules into allOf", () => {
@@ -89,5 +81,12 @@ describe("buildSchema", () => {
         },
       },
     ]);
+  });
+
+  it("keeps nested object properties inside the object field", () => {
+    const schema = buildSchema(buildSingleFieldForm("object"));
+
+    expect(schema.properties.object_field?.type).toBe("object");
+    expect(schema.properties.object_field?.properties?.child_name?.type).toBe("string");
   });
 });

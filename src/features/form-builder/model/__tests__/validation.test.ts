@@ -8,9 +8,8 @@ describe("validateFormDefinition", () => {
     const rootField = createField("string");
     rootField.key = "name";
 
-    const section = createField("section");
-    section.children = [createField("string")];
-    section.children[0].key = "name";
+    const duplicateRootField = createField("string");
+    duplicateRootField.key = "name";
 
     const nestedObject = createField("object");
     nestedObject.key = "details";
@@ -20,7 +19,7 @@ describe("validateFormDefinition", () => {
     const result = validateFormDefinition({
       title: "Validation",
       description: "",
-      fields: [rootField, section, nestedObject],
+      fields: [rootField, duplicateRootField, nestedObject],
     });
 
     expect(result.hasBlockingIssues).toBe(true);

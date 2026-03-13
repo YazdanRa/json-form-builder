@@ -1,16 +1,7 @@
-import { createInitialFormDefinition } from "../model";
+import { createInitialFormDefinition, normalizeFormDefinition } from "../model";
 import type { FormDefinition } from "../model";
 
 export const FORM_BUILDER_STORAGE_KEY = "json-form-builder:draft:v1";
-
-function isFormDefinition(value: unknown): value is FormDefinition {
-  if (!value || typeof value !== "object") {
-    return false;
-  }
-
-  const candidate = value as FormDefinition;
-  return typeof candidate.title === "string" && typeof candidate.description === "string" && Array.isArray(candidate.fields);
-}
 
 export function loadStoredFormDefinition(fallback = createInitialFormDefinition()): FormDefinition {
   if (typeof window === "undefined") {
@@ -24,7 +15,7 @@ export function loadStoredFormDefinition(fallback = createInitialFormDefinition(
     }
 
     const parsed = JSON.parse(raw) as unknown;
-    return isFormDefinition(parsed) ? parsed : fallback;
+    return normalizeFormDefinition(parsed);
   } catch {
     return fallback;
   }

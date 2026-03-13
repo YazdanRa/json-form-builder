@@ -9,14 +9,13 @@ This project is a client-only form builder for assembling a constrained subset o
 - Single Vite/React route at `/`
 - One reducer-owned draft form state tree
 - One browser-local persistence slot in `localStorage`
-- Read-only preview and generated-schema surfaces rendered from the same source state
+- Interactive preview and generated-schema surfaces rendered from the same source state
 
 ## Feature Boundaries
 
-- Supported field types: `string`, `textarea`, `number`, `integer`, `boolean`, `email`, `date`, `enum`, `object`, `array_string`, `array_object`, `section`
-- `section` is a UI grouping primitive only. It does not create schema nesting and its children are flattened into the parent object scope.
+- Supported field types: `string`, `textarea`, `number`, `integer`, `boolean`, `email`, `date`, `enum`, `object`, `array_string`, `array_object`
 - `object` and `array_object` create real JSON Schema nesting.
-- Conditional rules are equality-based only and are scoped to the current logical object scope. Sections do not create a new scope; objects and array items do.
+- Conditional rules are equality-based only and are scoped to the current logical object scope. Objects and array items create their own scopes.
 
 ## Module Layout
 

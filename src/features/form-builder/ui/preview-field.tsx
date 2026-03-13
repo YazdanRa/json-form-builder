@@ -76,28 +76,6 @@ export function PreviewField({ field, fieldIndex, scopeValues, setScopeValue }: 
   const fieldKey = resolveFieldKey(field, fieldIndex);
   const currentValue = scopeValues[fieldKey];
 
-  if (field.type === "section") {
-    return (
-      <div className="space-y-4 rounded-3xl border border-dashed border-primary/35 bg-white/86 p-5">
-        <div className="space-y-1">
-          <div className="text-lg font-semibold text-foreground">{field.title || "Untitled section"}</div>
-          {field.description ? <div className="text-sm text-muted-foreground">{field.description}</div> : null}
-        </div>
-        <div className="space-y-4">
-          {field.children.map((child, childIndex) => (
-            <PreviewField
-              key={child.id}
-              field={child}
-              fieldIndex={childIndex}
-              scopeValues={scopeValues}
-              setScopeValue={setScopeValue}
-            />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
   if (field.type === "object") {
     const objectValue = isPreviewScope(currentValue) ? currentValue : {};
 

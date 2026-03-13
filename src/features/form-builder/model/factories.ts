@@ -12,10 +12,9 @@ export const FIELD_TYPES: Array<{ value: FieldType; label: string }> = [
   { value: "object", label: "Nested object" },
   { value: "array_string", label: "List of text" },
   { value: "array_object", label: "List of objects" },
-  { value: "section", label: "Section" },
 ];
 
-const containerFieldTypes = new Set<FieldType>(["object", "array_object", "section"]);
+const containerFieldTypes = new Set<FieldType>(["object", "array_object"]);
 const placeholderFieldTypes = new Set<FieldType>(["string", "textarea", "email", "array_string"]);
 
 export function toSafeKey(input: string, fallback = "field") {
@@ -56,7 +55,7 @@ export function createField(type: FieldType = "string"): FormField {
   return {
     id: crypto.randomUUID(),
     key: "",
-    title: type === "section" ? "Untitled section" : "Untitled question",
+    title: type === "object" ? "Untitled object" : type === "array_object" ? "Untitled list" : "Untitled question",
     description: "",
     type,
     required: false,
@@ -88,10 +87,10 @@ export function createInitialFormDefinition(): FormDefinition {
     fields: [
       {
         id: crypto.randomUUID(),
-        key: "contact_section",
+        key: "contact_details",
         title: "Contact Details",
         description: "Basic information about the requester.",
-        type: "section",
+        type: "object",
         required: false,
         placeholder: "",
         options: [],
