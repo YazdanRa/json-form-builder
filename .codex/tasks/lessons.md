@@ -14,3 +14,4 @@
 - When a builder card starts feeling box-in-box or overly nested, flatten the summary chrome first: promote the title and metadata pills into the main card header and keep the collapse affordance at that same level instead of adding another inset container.
 - When the user marks a screenshot with explicit spatial placement, follow that geometry literally. Do not translate it into a broader “cleaner layout” interpretation if the ask is really “move this row under that title.”
 - When a screenshot correction is about row placement, preserve the user’s exact row grouping. “Inline with the summary” means the pills stay in the same summary row as the title; it does not mean “near the title” on a separate row.
+- When a preview renderer has type-specific branches, keep the shared field chrome consistent across them. Specialized renderers like `array_string` still need the same label and description wrapper as the standard field path.

@@ -115,6 +115,20 @@ describe("JsonSchemaFormBuilderApp", () => {
     expect(fullNameInput).toHaveValue("Taylor");
   });
 
+  it("renders list-of-text preview fields with label and description", async () => {
+    const user = userEvent.setup();
+    render(<JsonSchemaFormBuilderApp />);
+
+    const previewPanel = screen.getByTestId("preview-panel");
+
+    expect(within(previewPanel).getByText("Related Links")).toBeInTheDocument();
+    expect(within(previewPanel).getByText("A simple list of text items")).toBeInTheDocument();
+    expect(within(previewPanel).getByLabelText("Related Links item 1")).toBeInTheDocument();
+
+    await user.click(within(previewPanel).getByRole("button", { name: "Add Related Links item" }));
+    expect(within(previewPanel).getByLabelText("Related Links item 2")).toBeInTheDocument();
+  });
+
   it("disables always required for conditional fields", () => {
     render(<JsonSchemaFormBuilderApp />);
 

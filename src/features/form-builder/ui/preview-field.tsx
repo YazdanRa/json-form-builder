@@ -147,7 +147,12 @@ export function PreviewField({ field, fieldIndex, scopeValues, setScopeValue }: 
     const items = isStringList(currentValue) ? currentValue : [""];
 
     return (
-      <div className="space-y-2">
+      <div className="space-y-2 rounded-[24px] border border-slate-300/72 bg-white/82 p-4">
+        <div className="flex items-center gap-2">
+          <Label className="text-sm font-semibold text-foreground">{field.title || "Untitled question"}</Label>
+          {isRequiredWhenVisible ? <span className="text-xs font-semibold text-destructive">*</span> : null}
+        </div>
+        {field.description ? <p className="text-sm text-muted-foreground">{field.description}</p> : null}
         {items.map((item, itemIndex) => (
           <div key={`${field.id}-item-${itemIndex}`} className="flex items-center gap-2">
             <Input
