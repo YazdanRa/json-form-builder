@@ -49,7 +49,6 @@ export function FieldEditor({
   const issues = issuesByField[field.id] ?? [];
   const isConditionControlled = field.conditions.length > 0;
   const fieldLabel = field.title.trim() || field.key.trim() || "Untitled field";
-  const fieldKindLabel = field.type === "object" ? "Object" : field.type === "array_object" ? "Object List" : "Field";
   const panelId = `field-${field.id}-panel`;
 
   const titleInputId = `field-${field.id}-title`;
@@ -63,47 +62,42 @@ export function FieldEditor({
       data-testid={`${depth === 0 ? "root" : "nested"}-field-editor-${field.id}`}
     >
       <CardContent className="space-y-4 p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1 space-y-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <GripVertical className="h-4 w-4" />
-              <span>{fieldKindLabel}</span>
-            </div>
-            <button
-              type="button"
-              className="flex w-full items-start justify-between gap-3 rounded-[20px] border border-transparent bg-muted/55 px-3 py-3 text-left transition-colors hover:bg-muted/72 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              aria-expanded={isExpanded}
-              aria-controls={panelId}
-              aria-label={`${isExpanded ? "Collapse" : "Expand"} ${fieldLabel}`}
-              onClick={() => setIsExpanded((current) => !current)}
-            >
-              <div className="min-w-0 space-y-2">
-                <div className="text-base font-semibold text-foreground">{fieldLabel}</div>
-                <div className="flex flex-wrap gap-2 text-xs font-medium text-muted-foreground">
+        <div className="flex items-start justify-between gap-4">
+          <button
+            type="button"
+            className="flex min-w-0 flex-1 items-start gap-3 rounded-[20px] border border-transparent px-1 py-1 text-left transition-colors hover:bg-muted/38 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            aria-expanded={isExpanded}
+            aria-controls={panelId}
+            aria-label={`${isExpanded ? "Collapse" : "Expand"} ${fieldLabel}`}
+            onClick={() => setIsExpanded((current) => !current)}
+          >
+            <GripVertical className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" />
+            <div className="min-w-0 flex-1 space-y-2">
+              <div className="text-[1.05rem] font-semibold text-foreground">{fieldLabel}</div>
+              <div className="flex flex-wrap gap-2 text-xs font-medium text-muted-foreground">
+                <span className="rounded-full border border-border/80 bg-white/82 px-2.5 py-1">
+                  {field.type.replaceAll("_", " ")}
+                </span>
+                <span className="rounded-full border border-border/80 bg-white/82 px-2.5 py-1">
+                  {field.key.trim() ? `Key: ${field.key.trim()}` : "Key: auto-generated"}
+                </span>
+                {nestedEnabled ? (
                   <span className="rounded-full border border-border/80 bg-white/82 px-2.5 py-1">
-                    {field.type.replaceAll("_", " ")}
+                    {field.children.length} nested field{field.children.length === 1 ? "" : "s"}
                   </span>
+                ) : null}
+                {field.conditions.length ? (
                   <span className="rounded-full border border-border/80 bg-white/82 px-2.5 py-1">
-                    {field.key.trim() ? `Key: ${field.key.trim()}` : "Key: auto-generated"}
+                    {field.conditions.length} condition{field.conditions.length === 1 ? "" : "s"}
                   </span>
-                  {nestedEnabled ? (
-                    <span className="rounded-full border border-border/80 bg-white/82 px-2.5 py-1">
-                      {field.children.length} nested field{field.children.length === 1 ? "" : "s"}
-                    </span>
-                  ) : null}
-                  {field.conditions.length ? (
-                    <span className="rounded-full border border-border/80 bg-white/82 px-2.5 py-1">
-                      {field.conditions.length} condition{field.conditions.length === 1 ? "" : "s"}
-                    </span>
-                  ) : null}
-                </div>
+                ) : null}
               </div>
-              <ChevronDown
-                className={cn("mt-0.5 h-5 w-5 shrink-0 text-muted-foreground transition-transform", !isExpanded && "-rotate-90")}
-              />
-            </button>
-          </div>
-          <div className="flex gap-2">
+            </div>
+            <ChevronDown
+              className={cn("mt-1 h-5 w-5 shrink-0 text-muted-foreground transition-transform", !isExpanded && "-rotate-90")}
+            />
+          </button>
+          <div className="flex shrink-0 gap-2 self-start">
             <Button
               type="button"
               variant="outline"
