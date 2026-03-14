@@ -63,7 +63,7 @@ export function FieldEditor({
     >
       <CardContent className="space-y-4 p-4">
         <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0 flex-1 space-y-3">
+          <div className="min-w-0 flex-1">
             <div className="flex items-start gap-3">
               <GripVertical className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" />
               <button
@@ -74,29 +74,29 @@ export function FieldEditor({
                 aria-label={`${isExpanded ? "Collapse" : "Expand"} ${fieldLabel}`}
                 onClick={() => setIsExpanded((current) => !current)}
               >
-                <div className="min-w-0 text-[1.05rem] font-semibold text-foreground">{fieldLabel}</div>
+                <div className="min-w-0 flex flex-1 flex-wrap items-center gap-x-3 gap-y-2">
+                  <div className="shrink-0 text-[1.05rem] font-semibold text-foreground">{fieldLabel}</div>
+                  <span className="rounded-full border border-border/80 bg-white/82 px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                    {field.type.replaceAll("_", " ")}
+                  </span>
+                  <span className="rounded-full border border-border/80 bg-white/82 px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                    {field.key.trim() ? `Key: ${field.key.trim()}` : "Key: auto-generated"}
+                  </span>
+                  {nestedEnabled ? (
+                    <span className="rounded-full border border-border/80 bg-white/82 px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                      {field.children.length} nested field{field.children.length === 1 ? "" : "s"}
+                    </span>
+                  ) : null}
+                  {field.conditions.length ? (
+                    <span className="rounded-full border border-border/80 bg-white/82 px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                      {field.conditions.length} condition{field.conditions.length === 1 ? "" : "s"}
+                    </span>
+                  ) : null}
+                </div>
                 <ChevronDown
                   className={cn("mt-1 h-5 w-5 shrink-0 text-muted-foreground transition-transform", !isExpanded && "-rotate-90")}
                 />
               </button>
-            </div>
-            <div className="flex flex-wrap gap-2 pl-7 text-xs font-medium text-muted-foreground">
-              <span className="rounded-full border border-border/80 bg-white/82 px-2.5 py-1">
-                {field.type.replaceAll("_", " ")}
-              </span>
-              <span className="rounded-full border border-border/80 bg-white/82 px-2.5 py-1">
-                {field.key.trim() ? `Key: ${field.key.trim()}` : "Key: auto-generated"}
-              </span>
-              {nestedEnabled ? (
-                <span className="rounded-full border border-border/80 bg-white/82 px-2.5 py-1">
-                  {field.children.length} nested field{field.children.length === 1 ? "" : "s"}
-                </span>
-              ) : null}
-              {field.conditions.length ? (
-                <span className="rounded-full border border-border/80 bg-white/82 px-2.5 py-1">
-                  {field.conditions.length} condition{field.conditions.length === 1 ? "" : "s"}
-                </span>
-              ) : null}
             </div>
           </div>
           <div className="flex shrink-0 gap-2 self-start">

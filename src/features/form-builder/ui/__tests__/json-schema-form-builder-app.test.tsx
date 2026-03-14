@@ -90,8 +90,7 @@ describe("JsonSchemaFormBuilderApp", () => {
     const firstCard = screen.getAllByTestId(/root-field-editor-/)[0];
     const summaryToggle = within(firstCard).getByRole("button", { name: "Collapse Contact Details" });
 
-    expect(within(summaryToggle).queryByText("Key: contact_details")).not.toBeInTheDocument();
-    expect(within(firstCard).getByText("Key: contact_details")).toBeInTheDocument();
+    expect(within(summaryToggle).getByText("Key: contact_details")).toBeInTheDocument();
 
     await user.click(summaryToggle);
     expect(within(firstCard).queryByLabelText("Label")).not.toBeInTheDocument();
