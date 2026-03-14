@@ -83,6 +83,20 @@ describe("JsonSchemaFormBuilderApp", () => {
     expect(within(cards[1]).getByDisplayValue("Contact Details")).toBeInTheDocument();
   });
 
+  it("collapses and expands field editor cards", async () => {
+    const user = userEvent.setup();
+    render(<JsonSchemaFormBuilderApp />);
+
+    const firstCard = screen.getAllByTestId(/root-field-editor-/)[0];
+
+    await user.click(within(firstCard).getByRole("button", { name: "Collapse Contact Details" }));
+    expect(within(firstCard).queryByLabelText("Label")).not.toBeInTheDocument();
+    expect(within(firstCard).getByRole("button", { name: "Expand Contact Details" })).toBeInTheDocument();
+
+    await user.click(within(firstCard).getByRole("button", { name: "Expand Contact Details" }));
+    expect(within(firstCard).getByDisplayValue("Contact Details")).toBeInTheDocument();
+  });
+
   it("uses the preview as an interactive form and hides inactive conditional fields", async () => {
     const user = userEvent.setup();
     render(<JsonSchemaFormBuilderApp />);
