@@ -13,11 +13,18 @@ interface LegacyFormDefinition extends Omit<FormDefinition, "fields"> {
 }
 
 function normalizeField(field: LegacyFormField): FormField {
+  const rawField = field as LegacyFormField & { placeholder?: unknown };
+
   return {
-    ...field,
-    type: field.type === "section" ? "object" : field.type,
-    children: Array.isArray(field.children) ? field.children.map(normalizeField) : [],
-    conditions: Array.isArray(field.conditions) ? field.conditions : [],
+    id: rawField.id,
+    key: rawField.key,
+    title: rawField.title,
+    description: rawField.description,
+    type: rawField.type === "section" ? "object" : rawField.type,
+    required: rawField.required,
+    options: Array.isArray(rawField.options) ? rawField.options : [],
+    children: Array.isArray(rawField.children) ? rawField.children.map(normalizeField) : [],
+    conditions: Array.isArray(rawField.conditions) ? rawField.conditions : [],
   };
 }
 

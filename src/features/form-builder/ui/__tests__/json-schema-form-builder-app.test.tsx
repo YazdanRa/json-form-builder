@@ -70,7 +70,6 @@ describe("JsonSchemaFormBuilderApp", () => {
     expect(screen.getByTestId("schema-output")).toHaveTextContent('"request_type"');
     expect(screen.getByTestId("schema-output")).not.toHaveTextContent('"x-conditions"');
     expect(screen.getByTestId("schema-output")).not.toHaveTextContent('"x-ui"');
-    expect(screen.getByTestId("schema-output")).not.toHaveTextContent('"x-placeholder"');
   });
 
   it("reorders fields inside the builder", async () => {
@@ -94,8 +93,18 @@ describe("JsonSchemaFormBuilderApp", () => {
     await user.click(within(previewPanel).getByLabelText("Bug"));
     expect(within(previewPanel).getByText("Bug Details")).toBeInTheDocument();
 
-    const fullNameInput = within(previewPanel).getByPlaceholderText("John Appleseed");
+    const fullNameInput = within(previewPanel).getByLabelText("Full Name");
     await user.type(fullNameInput, "Taylor");
     expect(fullNameInput).toHaveValue("Taylor");
+  });
+
+  it("disables always required for conditional fields", () => {
+    render(<JsonSchemaFormBuilderApp />);
+
+    const bugDetailsCard = screen.getAllByTestId(/root-field-editor-/)[2];
+    const alwaysRequiredSwitch = within(bugDetailsCard).getAllByRole("switch")[0];
+
+    expect(within(bugDetailsCard).getAllByText("Always Required")[0]).toBeInTheDocument();
+    expect(alwaysRequiredSwitch).toBeDisabled();
   });
 });

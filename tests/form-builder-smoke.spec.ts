@@ -18,7 +18,6 @@ test("builds and exports a schema draft", async ({ page }) => {
   await expect(page.getByTestId("schema-output")).toContainText('"allOf"');
   await expect(page.getByTestId("schema-output")).not.toContainText('"x-conditions"');
   await expect(page.getByTestId("schema-output")).not.toContainText('"x-ui"');
-  await expect(page.getByTestId("schema-output")).not.toContainText('"x-placeholder"');
 
   await page.getByRole("tab", { name: "Preview" }).click();
   await expect(page.getByTestId("preview-panel").getByText("Bug Details")).toHaveCount(0);

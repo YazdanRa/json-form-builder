@@ -15,7 +15,6 @@ import {
   getFlatDependencyOptions,
   supportsChildren,
   supportsOptions,
-  supportsPlaceholder,
   type FormField,
   type ValidationIssue,
 } from "@/features/form-builder/model";
@@ -41,17 +40,16 @@ export function FieldEditor({
   onMove,
   onAddChild,
 }: FieldEditorProps) {
-  const placeholderEnabled = supportsPlaceholder(field.type);
   const optionsEnabled = supportsOptions(field.type);
   const nestedEnabled = supportsChildren(field.type);
   const dependencyOptions = getFlatDependencyOptions(scopeFields).filter((option) => option.id !== field.id);
   const issues = issuesByField[field.id] ?? [];
+  const isConditionControlled = field.conditions.length > 0;
 
   const titleInputId = `field-${field.id}-title`;
   const keyInputId = `field-${field.id}-key`;
   const descriptionInputId = `field-${field.id}-description`;
   const typeInputId = `field-${field.id}-type`;
-  const placeholderInputId = `field-${field.id}-placeholder`;
 
   return (
     <Card
@@ -150,18 +148,6 @@ export function FieldEditor({
           </div>
         </div>
 
-        {placeholderEnabled ? (
-          <div className="space-y-2">
-            <Label htmlFor={placeholderInputId}>Placeholder</Label>
-            <Input
-              id={placeholderInputId}
-              value={field.placeholder}
-              onChange={(event) => onChange({ placeholder: event.target.value })}
-              placeholder="Optional placeholder"
-            />
-          </div>
-        ) : null}
-
         {optionsEnabled ? (
           <div className="space-y-3 rounded-[22px] border border-slate-300/70 bg-muted/60 p-3">
             <div className="flex items-center justify-between">
@@ -207,10 +193,18 @@ export function FieldEditor({
 
         <div className="rounded-[22px] bg-muted/72 p-3">
           <div className="flex items-center gap-3">
-            <Switch checked={field.required} onCheckedChange={(checked) => onChange({ required: checked })} />
+            <Switch
+              checked={!isConditionControlled && field.required}
+              disabled={isConditionControlled}
+              onCheckedChange={(checked) => onChange({ required: checked })}
+            />
             <div>
-              <div className="text-sm font-semibold">Required field</div>
-              <div className="text-xs text-muted-foreground">Adds the field key to the schema `required` array.</div>
+              <div className="text-sm font-semibold">Always Required</div>
+              <div className="text-xs text-muted-foreground">
+                {isConditionControlled
+                  ? "Disabled because conditional fields are required by their active branch, not unconditionally."
+                  : "Adds the field key to the schema `required` array unconditionally."}
+              </div>
             </div>
           </div>
         </div>
@@ -227,7 +221,7 @@ export function FieldEditor({
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => onChange({ conditions: [...field.conditions, createConditionRule()] })}
+              onClick={() => onChange({ conditions: [...field.conditions, createConditionRule()], required: false })}
             >
               <Plus className="h-4 w-4" /> Add rule
             </Button>
@@ -242,7 +236,7 @@ export function FieldEditor({
                     onValueChange={(value) => {
                       const next = [...field.conditions];
                       next[index] = { ...condition, dependsOn: value === "__none__" ? "" : value };
-                      onChange({ conditions: next });
+                      onChange({ conditions: next, required: false });
                     }}
                   >
                     <SelectTrigger>
@@ -264,7 +258,7 @@ export function FieldEditor({
                     onChange={(event) => {
                       const next = [...field.conditions];
                       next[index] = { ...condition, equals: event.target.value };
-                      onChange({ conditions: next });
+                      onChange({ conditions: next, required: false });
                     }}
                     placeholder="Equals"
                   />
@@ -275,7 +269,7 @@ export function FieldEditor({
                     size="icon"
                     aria-label={`Remove condition ${index + 1}`}
                     onClick={() =>
-                      onChange({ conditions: field.conditions.filter((_, conditionIndex) => conditionIndex !== index) })
+                      onChange({ conditions: field.conditions.filter((_, conditionIndex) => conditionIndex !== index), required: false })
                     }
                   >
                     <Trash2 className="h-4 w-4" />

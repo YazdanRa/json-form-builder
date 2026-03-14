@@ -8,7 +8,6 @@ function buildSingleFieldForm(fieldType: FieldType): FormDefinition {
   const field = createField(fieldType);
   field.key = `${fieldType}_field`;
   field.title = `${fieldType} field`;
-  field.placeholder = "Placeholder";
 
   if (fieldType === "enum") {
     field.options = ["Alpha", "Beta"];
@@ -89,10 +88,27 @@ describe("buildSchema", () => {
     const textareaSchema = buildSchema(buildSingleFieldForm("textarea")).properties.textarea_field;
     const emailSchema = buildSchema(buildSingleFieldForm("email")).properties.email_field;
 
-    expect(stringSchema).not.toHaveProperty("x-placeholder");
     expect(textareaSchema).not.toHaveProperty("x-ui");
+    expect(stringSchema).not.toHaveProperty("x-placeholder");
     expect(textareaSchema).not.toHaveProperty("x-placeholder");
     expect(emailSchema).not.toHaveProperty("x-placeholder");
+  });
+
+  it("does not add condition-controlled fields to unconditional required arrays", () => {
+    const conditionalField = createField("string");
+    conditionalField.key = "details";
+    conditionalField.title = "Details";
+    conditionalField.required = true;
+    conditionalField.conditions = [{ id: "condition-1", dependsOn: "request_type", equals: "Bug" }];
+
+    const schema = buildSchema({
+      title: "Conditional required form",
+      description: "",
+      fields: [createField("enum"), conditionalField],
+    });
+
+    expect(schema.required ?? []).not.toContain("details");
+    expect(schema.allOf).toBeDefined();
   });
 
   it("keeps nested object properties inside the object field", () => {

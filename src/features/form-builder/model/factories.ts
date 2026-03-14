@@ -16,7 +16,6 @@ export const FIELD_TYPES: Array<{ value: FieldType; label: string }> = [
 ];
 
 const containerFieldTypes = new Set<FieldType>(["object", "array_object"]);
-const placeholderFieldTypes = new Set<FieldType>(["string", "textarea", "email", "array_string"]);
 
 export function toSafeKey(input: string, fallback = "field") {
   return (
@@ -36,10 +35,6 @@ export function supportsChildren(type: FieldType) {
   return containerFieldTypes.has(type);
 }
 
-export function supportsPlaceholder(type: FieldType) {
-  return placeholderFieldTypes.has(type);
-}
-
 export function supportsOptions(type: FieldType) {
   return type === "enum";
 }
@@ -52,7 +47,6 @@ export function createField(type: FieldType = "string"): FormField {
     description: "",
     type,
     required: false,
-    placeholder: "",
     options: type === "enum" ? ["Option 1", "Option 2"] : [],
     children: supportsChildren(type) ? [createField("string")] : [],
     conditions: [],
@@ -69,7 +63,6 @@ export function createTypeChangePatch(field: FormField, type: FieldType): Partia
       : [],
     options:
       type === "enum" ? (field.options.length ? field.options : ["Option 1", "Option 2"]) : field.options,
-    placeholder: supportsPlaceholder(type) ? field.placeholder : "",
     conditions: field.conditions,
   };
 }
@@ -86,7 +79,6 @@ export function createInitialFormDefinition(): FormDefinition {
         description: "Basic information about the requester.",
         type: "object",
         required: false,
-        placeholder: "",
         options: [],
         conditions: [],
         children: [
@@ -97,7 +89,6 @@ export function createInitialFormDefinition(): FormDefinition {
             description: "Name of the requester",
             type: "string",
             required: true,
-            placeholder: "John Appleseed",
             options: [],
             children: [],
             conditions: [],
@@ -109,7 +100,6 @@ export function createInitialFormDefinition(): FormDefinition {
             description: "Primary contact email",
             type: "email",
             required: true,
-            placeholder: "name@company.com",
             options: [],
             children: [],
             conditions: [],
@@ -123,7 +113,6 @@ export function createInitialFormDefinition(): FormDefinition {
         description: "Select the kind of request",
         type: "enum",
         required: true,
-        placeholder: "",
         options: ["Bug", "Feature", "Support"],
         children: [],
         conditions: [],
@@ -135,7 +124,6 @@ export function createInitialFormDefinition(): FormDefinition {
         description: "Optional details when the request is a bug.",
         type: "object",
         required: false,
-        placeholder: "",
         options: [],
         conditions: [{ ...createConditionRule(), dependsOn: "request_type", equals: "Bug" }],
         children: [
@@ -146,7 +134,6 @@ export function createInitialFormDefinition(): FormDefinition {
             description: "",
             type: "enum",
             required: true,
-            placeholder: "",
             options: ["Low", "Medium", "High"],
             children: [],
             conditions: [],
@@ -158,7 +145,6 @@ export function createInitialFormDefinition(): FormDefinition {
             description: "",
             type: "textarea",
             required: false,
-            placeholder: "Describe the steps",
             options: [],
             children: [],
             conditions: [],
@@ -172,7 +158,6 @@ export function createInitialFormDefinition(): FormDefinition {
         description: "A simple list of text items",
         type: "array_string",
         required: false,
-        placeholder: "https://...",
         options: [],
         children: [],
         conditions: [],
@@ -184,7 +169,6 @@ export function createInitialFormDefinition(): FormDefinition {
         description: "A list of nested object items",
         type: "array_object",
         required: false,
-        placeholder: "",
         options: [],
         conditions: [],
         children: [
@@ -195,7 +179,6 @@ export function createInitialFormDefinition(): FormDefinition {
             description: "",
             type: "string",
             required: true,
-            placeholder: "",
             options: [],
             children: [],
             conditions: [],
@@ -207,7 +190,6 @@ export function createInitialFormDefinition(): FormDefinition {
             description: "",
             type: "string",
             required: false,
-            placeholder: "",
             options: [],
             children: [],
             conditions: [],

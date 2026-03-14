@@ -45,6 +45,7 @@ export function PreviewField({ field, fieldIndex, scopeValues, setScopeValue }: 
 
   const fieldKey = resolveFieldKey(field, fieldIndex);
   const currentValue = scopeValues[fieldKey];
+  const isRequiredWhenVisible = field.required || field.conditions.length > 0;
 
   if (field.type === "object") {
     const objectValue = isPreviewScope(currentValue) ? currentValue : {};
@@ -151,7 +152,6 @@ export function PreviewField({ field, fieldIndex, scopeValues, setScopeValue }: 
           <div key={`${field.id}-item-${itemIndex}`} className="flex items-center gap-2">
             <Input
               aria-label={`${field.title || "Untitled question"} item ${itemIndex + 1}`}
-              placeholder={field.placeholder || field.title}
               value={item}
               onChange={(event) => {
                 const next = [...items];
@@ -189,7 +189,7 @@ export function PreviewField({ field, fieldIndex, scopeValues, setScopeValue }: 
     <div className="space-y-2 rounded-[24px] border border-slate-300/72 bg-white/82 p-4">
       <div className="flex items-center gap-2">
         <Label className="text-sm font-semibold text-foreground">{field.title || "Untitled question"}</Label>
-        {field.required ? <span className="text-xs font-semibold text-destructive">*</span> : null}
+        {isRequiredWhenVisible ? <span className="text-xs font-semibold text-destructive">*</span> : null}
       </div>
       {field.description ? <p className="text-sm text-muted-foreground">{field.description}</p> : null}
       {(() => {
@@ -197,7 +197,7 @@ export function PreviewField({ field, fieldIndex, scopeValues, setScopeValue }: 
           case "textarea":
             return (
               <Textarea
-                placeholder={field.placeholder || field.title}
+                aria-label={field.title || "Untitled question"}
                 value={typeof currentValue === "string" ? currentValue : ""}
                 onChange={(event) => setScopeValue(fieldKey, event.target.value)}
               />
@@ -207,7 +207,7 @@ export function PreviewField({ field, fieldIndex, scopeValues, setScopeValue }: 
             return (
               <Input
                 type="number"
-                placeholder={field.placeholder || field.title}
+                aria-label={field.title || "Untitled question"}
                 value={typeof currentValue === "string" ? currentValue : ""}
                 onChange={(event) => setScopeValue(fieldKey, event.target.value)}
               />
@@ -216,7 +216,7 @@ export function PreviewField({ field, fieldIndex, scopeValues, setScopeValue }: 
             return (
               <Input
                 type="email"
-                placeholder={field.placeholder || field.title}
+                aria-label={field.title || "Untitled question"}
                 value={typeof currentValue === "string" ? currentValue : ""}
                 onChange={(event) => setScopeValue(fieldKey, event.target.value)}
               />
@@ -225,6 +225,7 @@ export function PreviewField({ field, fieldIndex, scopeValues, setScopeValue }: 
             return (
               <Input
                 type="date"
+                aria-label={field.title || "Untitled question"}
                 value={typeof currentValue === "string" ? currentValue : ""}
                 onChange={(event) => setScopeValue(fieldKey, event.target.value)}
               />
@@ -261,7 +262,7 @@ export function PreviewField({ field, fieldIndex, scopeValues, setScopeValue }: 
           default:
             return (
               <Input
-                placeholder={field.placeholder || field.title}
+                aria-label={field.title || "Untitled question"}
                 value={typeof currentValue === "string" ? currentValue : ""}
                 onChange={(event) => setScopeValue(fieldKey, event.target.value)}
               />

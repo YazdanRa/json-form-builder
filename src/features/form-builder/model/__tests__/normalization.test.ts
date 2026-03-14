@@ -15,7 +15,6 @@ describe("normalizeFormDefinition", () => {
           description: "",
           type: "section",
           required: false,
-          placeholder: "",
           options: [],
           conditions: [],
           children: [],

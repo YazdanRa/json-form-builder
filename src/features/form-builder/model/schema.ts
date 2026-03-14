@@ -9,6 +9,7 @@ function buildFieldCollection(fields: FormField[]) {
 
   fields.forEach((field, index) => {
     const key = resolveFieldKey(field, index);
+    const isConditionControlled = field.conditions.length > 0;
     const base: JsonSchemaNode = {
       title: field.title || "Untitled question",
       description: field.description || undefined,
@@ -84,7 +85,7 @@ function buildFieldCollection(fields: FormField[]) {
     }
 
     properties[key] = schema;
-    if (field.required) {
+    if (field.required && !isConditionControlled) {
       required.push(key);
     }
 

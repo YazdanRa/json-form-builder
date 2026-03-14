@@ -24,7 +24,6 @@ export interface FormField {
   description: string;
   type: FieldType;
   required: boolean;
-  placeholder: string;
   options: string[];
   children: FormField[];
   conditions: ConditionRule[];
