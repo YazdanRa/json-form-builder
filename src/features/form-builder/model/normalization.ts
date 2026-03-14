@@ -17,6 +17,7 @@ function normalizeField(field: LegacyFormField): FormField {
     ...field,
     type: field.type === "section" ? "object" : field.type,
     children: Array.isArray(field.children) ? field.children.map(normalizeField) : [],
+    conditions: Array.isArray(field.conditions) ? field.conditions : [],
   };
 }
 

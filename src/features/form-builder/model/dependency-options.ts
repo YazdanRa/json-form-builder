@@ -2,19 +2,16 @@ import { toSafeKey } from "./factories";
 import type { DependencyOption, FormField } from "./types";
 
 export function getFlatDependencyOptions(fields: FormField[], parentPrefix = ""): DependencyOption[] {
-  const result: DependencyOption[] = [];
-
-  fields.forEach((field) => {
+  return fields.map((field) => {
     const key = toSafeKey(field.key || field.title || field.id);
     const path = parentPrefix ? `${parentPrefix}.${key}` : key;
-    result.push({
+
+    return {
       id: field.id,
       label: field.title || key,
       key,
       path,
       type: field.type,
-    });
+    };
   });
-
-  return result;
 }

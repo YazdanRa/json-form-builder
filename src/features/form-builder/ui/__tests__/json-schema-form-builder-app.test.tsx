@@ -51,7 +51,7 @@ describe("JsonSchemaFormBuilderApp", () => {
     expect(screen.getByRole("button", { name: "Export Schema" })).toBeDisabled();
   });
 
-  it("updates enum options and conditional rules in the schema output", async () => {
+  it("updates enum options and compiles conditional rules into native schema branches", async () => {
     const user = userEvent.setup();
     render(<JsonSchemaFormBuilderApp />);
 
@@ -66,8 +66,11 @@ describe("JsonSchemaFormBuilderApp", () => {
     await user.click(screen.getByRole("tab", { name: "JSON Schema" }));
 
     expect(screen.getByTestId("schema-output")).toHaveTextContent('"Incident"');
-    expect(screen.getByTestId("schema-output")).toHaveTextContent('"dependsOn": "request_type"');
-    expect(screen.getByTestId("schema-output")).toHaveTextContent('"equals": "Incident"');
+    expect(screen.getByTestId("schema-output")).toHaveTextContent('"allOf"');
+    expect(screen.getByTestId("schema-output")).toHaveTextContent('"request_type"');
+    expect(screen.getByTestId("schema-output")).not.toHaveTextContent('"x-conditions"');
+    expect(screen.getByTestId("schema-output")).not.toHaveTextContent('"x-ui"');
+    expect(screen.getByTestId("schema-output")).not.toHaveTextContent('"x-placeholder"');
   });
 
   it("reorders fields inside the builder", async () => {
@@ -81,7 +84,7 @@ describe("JsonSchemaFormBuilderApp", () => {
     expect(within(cards[1]).getByDisplayValue("Contact Details")).toBeInTheDocument();
   });
 
-  it("uses the preview as an interactive form and applies conditional visibility", async () => {
+  it("uses the preview as an interactive form and hides inactive conditional fields", async () => {
     const user = userEvent.setup();
     render(<JsonSchemaFormBuilderApp />);
 
@@ -89,7 +92,6 @@ describe("JsonSchemaFormBuilderApp", () => {
     expect(within(previewPanel).queryByText("Bug Details")).not.toBeInTheDocument();
 
     await user.click(within(previewPanel).getByLabelText("Bug"));
-
     expect(within(previewPanel).getByText("Bug Details")).toBeInTheDocument();
 
     const fullNameInput = within(previewPanel).getByPlaceholderText("John Appleseed");

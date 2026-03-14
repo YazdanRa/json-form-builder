@@ -218,9 +218,9 @@ export function FieldEditor({
         <div className="space-y-3 rounded-[22px] border border-slate-300/70 bg-white/82 p-3">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm font-semibold">Conditional logic</div>
+              <div className="text-sm font-semibold">Conditional visibility</div>
               <div className="text-xs text-muted-foreground">
-                Show this field when another field in the same scope equals a value.
+                Promote this field into a native JSON Schema `if` / `then` branch when another field equals a value.
               </div>
             </div>
             <Button
@@ -274,7 +274,9 @@ export function FieldEditor({
                     variant="outline"
                     size="icon"
                     aria-label={`Remove condition ${index + 1}`}
-                    onClick={() => onChange({ conditions: field.conditions.filter((_, itemIndex) => itemIndex !== index) })}
+                    onClick={() =>
+                      onChange({ conditions: field.conditions.filter((_, conditionIndex) => conditionIndex !== index) })
+                    }
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

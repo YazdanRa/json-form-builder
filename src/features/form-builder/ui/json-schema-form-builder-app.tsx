@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { clearStoredFormDefinition, loadStoredFormDefinition, saveStoredFormDefinition } from "../lib/storage";
 import { copySchemaToClipboard, downloadSchemaFile, formatSchemaFilename } from "../lib/export";
 import {
+  areConditionsSatisfied,
   buildSchema,
   createInitialFormDefinition,
   formBuilderReducer,
@@ -217,9 +218,11 @@ export function JsonSchemaFormBuilderApp() {
                     <CardDescription>{form.description || "No description provided."}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-5" data-testid="preview-panel">
-                    {form.fields.map((field, index) => (
+                    {form.fields
+                      .flatMap((field, index) => (areConditionsSatisfied(field.conditions, previewValues) ? [{ field, index }] : []))
+                      .map(({ field, index }, visibleIndex) => (
                       <div key={field.id} className="space-y-3">
-                        {index > 0 ? (
+                        {visibleIndex > 0 ? (
                           <div className="flex items-center gap-2 text-[11px] font-medium tracking-[0.14em] text-muted-foreground">
                             <ChevronRight className="h-3 w-3" /> Next block
                           </div>
@@ -244,7 +247,7 @@ export function JsonSchemaFormBuilderApp() {
                       <CardTitle>Generated JSON Schema</CardTitle>
                     </div>
                     <CardDescription>
-                      Draft 2020-12 plus UI metadata for placeholders and simple conditional hints.
+                      Draft 2020-12 only. Renderer behavior should come from standard schema keywords such as `required`.
                     </CardDescription>
                   </CardHeader>
                   <CardContent>

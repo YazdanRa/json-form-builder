@@ -1,3 +1,4 @@
+export * from "./conditions";
 export * from "./dependency-options";
 export * from "./factories";
 export * from "./normalization";

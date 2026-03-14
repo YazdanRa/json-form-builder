@@ -77,9 +77,6 @@ export interface JsonSchemaNode {
   required?: string[];
   items?: JsonSchemaNode;
   allOf?: JsonSchemaCondition[];
-  "x-placeholder"?: string;
-  "x-ui"?: string;
-  "x-conditions"?: Array<{ dependsOn: string; equals: string }>;
 }
 
 export interface JsonSchemaDocument extends JsonSchemaNode {

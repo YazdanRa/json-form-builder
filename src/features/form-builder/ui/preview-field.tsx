@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { resolveFieldKey, type FormField } from "@/features/form-builder/model";
+import { areConditionsSatisfied, resolveFieldKey, type FormField } from "@/features/form-builder/model";
 
 export interface PreviewScope {
   [key: string]: PreviewValue | undefined;
@@ -32,44 +32,14 @@ function isStringList(value: PreviewValue | undefined): value is string[] {
   return Array.isArray(value) && value.every((item) => typeof item === "string");
 }
 
-function getConditionComparableValue(value: PreviewValue | undefined) {
-  if (typeof value === "boolean") {
-    return value ? "true" : "false";
-  }
-
-  return typeof value === "string" ? value : "";
-}
-
-function isFieldVisible(field: FormField, scopeValues: PreviewScope) {
-  const validConditions = field.conditions.filter((condition) => condition.dependsOn && condition.equals !== "");
-  if (!validConditions.length) {
-    return true;
-  }
-
-  return validConditions.every(
-    (condition) => getConditionComparableValue(scopeValues[condition.dependsOn]) === condition.equals,
-  );
-}
-
-function renderConditionCopy(field: FormField) {
-  const validConditions = field.conditions.filter((condition) => condition.dependsOn && condition.equals !== "");
-  if (!validConditions.length) {
-    return null;
-  }
-
-  const text = validConditions
-    .map((condition) => `${condition.dependsOn} = ${condition.equals}`)
-    .join(" and ");
-
-  return (
-    <div className="rounded-[18px] bg-[rgba(255,214,10,0.18)] px-3 py-2 text-xs font-medium text-[rgb(124,77,0)]">
-      Visible when {text}
-    </div>
+function getVisibleChildren(fields: FormField[], scopeValues: PreviewScope) {
+  return fields.flatMap((field, index) =>
+    areConditionsSatisfied(field.conditions, scopeValues) ? [{ field, index }] : [],
   );
 }
 
 export function PreviewField({ field, fieldIndex, scopeValues, setScopeValue }: PreviewFieldProps) {
-  if (!isFieldVisible(field, scopeValues)) {
+  if (!areConditionsSatisfied(field.conditions, scopeValues)) {
     return null;
   }
 
@@ -85,8 +55,7 @@ export function PreviewField({ field, fieldIndex, scopeValues, setScopeValue }: 
           <div className="text-sm font-semibold text-foreground">{field.title}</div>
           {field.description ? <p className="text-sm text-muted-foreground">{field.description}</p> : null}
         </div>
-        {renderConditionCopy(field)}
-        {field.children.map((child, childIndex) => (
+        {getVisibleChildren(field.children, objectValue).map(({ field: child, index: childIndex }) => (
           <PreviewField
             key={child.id}
             field={child}
@@ -118,7 +87,6 @@ export function PreviewField({ field, fieldIndex, scopeValues, setScopeValue }: 
             <Plus className="h-4 w-4" /> Add item
           </Button>
         </div>
-        {renderConditionCopy(field)}
         {items.length ? (
           <div className="space-y-3 rounded-[20px] border border-dashed border-border/90 bg-muted/58 p-3">
             {items.map((item, itemIndex) => (
@@ -141,7 +109,7 @@ export function PreviewField({ field, fieldIndex, scopeValues, setScopeValue }: 
                     <Trash2 className="h-4 w-4" /> Remove
                   </Button>
                 </div>
-                {field.children.map((child, childIndex) => (
+                {getVisibleChildren(field.children, item).map(({ field: child, index: childIndex }) => (
                   <PreviewField
                     key={`${itemIndex}-${child.id}`}
                     field={child}
@@ -213,7 +181,6 @@ export function PreviewField({ field, fieldIndex, scopeValues, setScopeValue }: 
             </Button>
           </div>
         ))}
-        {renderConditionCopy(field)}
       </div>
     );
   }
@@ -225,7 +192,6 @@ export function PreviewField({ field, fieldIndex, scopeValues, setScopeValue }: 
         {field.required ? <span className="text-xs font-semibold text-destructive">*</span> : null}
       </div>
       {field.description ? <p className="text-sm text-muted-foreground">{field.description}</p> : null}
-      {renderConditionCopy(field)}
       {(() => {
         switch (field.type) {
           case "textarea":

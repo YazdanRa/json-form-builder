@@ -1,3 +1,4 @@
+import { createConditionRule } from "./conditions";
 import type { FieldType, FormDefinition, FormField } from "./types";
 
 export const FIELD_TYPES: Array<{ value: FieldType; label: string }> = [
@@ -29,14 +30,6 @@ export function toSafeKey(input: string, fallback = "field") {
 
 export function resolveFieldKey(field: Pick<FormField, "key" | "title">, index: number) {
   return toSafeKey(field.key || field.title, `field_${index + 1}`);
-}
-
-export function createConditionRule() {
-  return {
-    id: crypto.randomUUID(),
-    dependsOn: "",
-    equals: "",
-  };
 }
 
 export function supportsChildren(type: FieldType) {
@@ -77,6 +70,7 @@ export function createTypeChangePatch(field: FormField, type: FieldType): Partia
     options:
       type === "enum" ? (field.options.length ? field.options : ["Option 1", "Option 2"]) : field.options,
     placeholder: supportsPlaceholder(type) ? field.placeholder : "",
+    conditions: field.conditions,
   };
 }
 
@@ -138,12 +132,12 @@ export function createInitialFormDefinition(): FormDefinition {
         id: crypto.randomUUID(),
         key: "bug_details",
         title: "Bug Details",
-        description: "Shown only for bug reports",
+        description: "Optional details when the request is a bug.",
         type: "object",
         required: false,
         placeholder: "",
         options: [],
-        conditions: [{ id: crypto.randomUUID(), dependsOn: "request_type", equals: "Bug" }],
+        conditions: [{ ...createConditionRule(), dependsOn: "request_type", equals: "Bug" }],
         children: [
           {
             id: crypto.randomUUID(),

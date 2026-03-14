@@ -1,6 +1,6 @@
 # JSON Schema Form Builder
 
-Client-only form builder MVP for creating Google Forms-style questionnaires and exporting them as JSON Schema Draft 2020-12.
+Client-only form builder MVP for creating Google Forms-style questionnaires and exporting them as standard JSON Schema Draft 2020-12.
 
 ## Stack
 
@@ -38,9 +38,9 @@ bunx playwright install chromium
 
 ## Product Scope
 
-- Build forms with nested objects, arrays, enum choices, and simple conditional logic
+- Build forms with nested objects, arrays, enum choices, and equality-based conditional visibility
 - Preview the rendered structure interactively in-app
-- Copy or export generated JSON Schema
+- Copy or export generated JSON Schema without custom `x-*` metadata
 - Persist a single working draft locally in the browser
 
 Out of scope for this MVP: auth, backend persistence, schema import, form publishing, and response collection.

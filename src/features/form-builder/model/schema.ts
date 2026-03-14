@@ -1,29 +1,6 @@
+import { buildJsonSchemaCondition } from "./conditions";
 import { resolveFieldKey } from "./factories";
-import type {
-  FormDefinition,
-  FormField,
-  JsonSchemaCondition,
-  JsonSchemaDocument,
-  JsonSchemaNode,
-} from "./types";
-
-function getValidConditions(field: FormField) {
-  return field.conditions.filter((condition) => condition.dependsOn && condition.equals !== "");
-}
-
-function buildConditionBlocks(key: string, field: FormField): JsonSchemaCondition[] {
-  return getValidConditions(field).map((condition) => ({
-    if: {
-      properties: {
-        [condition.dependsOn]: { const: condition.equals },
-      },
-      required: [condition.dependsOn],
-    },
-    then: {
-      required: [key],
-    },
-  }));
-}
+import type { FormDefinition, FormField, JsonSchemaCondition, JsonSchemaDocument, JsonSchemaNode } from "./types";
 
 function buildFieldCollection(fields: FormField[]) {
   const properties: Record<string, JsonSchemaNode> = {};
@@ -41,15 +18,8 @@ function buildFieldCollection(fields: FormField[]) {
 
     switch (field.type) {
       case "string":
-        schema = { ...base, type: "string", "x-placeholder": field.placeholder || undefined };
-        break;
       case "textarea":
-        schema = {
-          ...base,
-          type: "string",
-          "x-ui": "textarea",
-          "x-placeholder": field.placeholder || undefined,
-        };
+        schema = { ...base, type: "string" };
         break;
       case "number":
         schema = { ...base, type: "number" };
@@ -65,7 +35,6 @@ function buildFieldCollection(fields: FormField[]) {
           ...base,
           type: "string",
           format: "email",
-          "x-placeholder": field.placeholder || undefined,
         };
         break;
       case "date":
@@ -114,18 +83,14 @@ function buildFieldCollection(fields: FormField[]) {
         schema = { ...base, type: "string" };
     }
 
-    const validConditions = getValidConditions(field);
-    if (validConditions.length) {
-      schema["x-conditions"] = validConditions.map((condition) => ({
-        dependsOn: condition.dependsOn,
-        equals: condition.equals,
-      }));
-      allOf.push(...buildConditionBlocks(key, field));
-    }
-
     properties[key] = schema;
     if (field.required) {
       required.push(key);
+    }
+
+    const conditionBlock = buildJsonSchemaCondition(key, field.conditions);
+    if (conditionBlock) {
+      allOf.push(conditionBlock);
     }
   });
 

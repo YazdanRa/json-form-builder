@@ -46,28 +46,29 @@ describe("buildSchema", () => {
     expect(schema.properties[key]?.type).toBe(expectedType);
   });
 
-  it("compiles required fields and conditional rules into allOf", () => {
-    const controller = createField("enum");
-    controller.key = "request_type";
-    controller.title = "Request Type";
-    controller.required = true;
-    controller.options = ["Bug", "Feature"];
+  it("compiles conditional visibility into native allOf branches", () => {
+    const requiredField = createField("enum");
+    requiredField.key = "request_type";
+    requiredField.title = "Request Type";
+    requiredField.required = true;
+    requiredField.options = ["Bug", "Feature"];
 
-    const dependent = createField("object");
-    dependent.key = "bug_details";
-    dependent.title = "Bug Details";
-    dependent.conditions = [{ id: crypto.randomUUID(), dependsOn: "request_type", equals: "Bug" }];
-    dependent.children = [createField("string")];
-    dependent.children[0].key = "steps";
-    dependent.children[0].title = "Steps";
+    const optionalField = createField("object");
+    optionalField.key = "bug_details";
+    optionalField.title = "Bug Details";
+    optionalField.conditions = [{ id: "condition-1", dependsOn: "request_type", equals: "Bug" }];
+    optionalField.children = [createField("string")];
+    optionalField.children[0].key = "steps";
+    optionalField.children[0].title = "Steps";
 
     const schema = buildSchema({
-      title: "Conditional form",
+      title: "Required form",
       description: "",
-      fields: [controller, dependent],
+      fields: [requiredField, optionalField],
     });
 
     expect(schema.required).toContain("request_type");
+    expect(schema.required).not.toContain("bug_details");
     expect(schema.allOf).toEqual([
       {
         if: {
@@ -81,6 +82,17 @@ describe("buildSchema", () => {
         },
       },
     ]);
+  });
+
+  it("omits custom x-prefixed metadata from exported fields", () => {
+    const stringSchema = buildSchema(buildSingleFieldForm("string")).properties.string_field;
+    const textareaSchema = buildSchema(buildSingleFieldForm("textarea")).properties.textarea_field;
+    const emailSchema = buildSchema(buildSingleFieldForm("email")).properties.email_field;
+
+    expect(stringSchema).not.toHaveProperty("x-placeholder");
+    expect(textareaSchema).not.toHaveProperty("x-ui");
+    expect(textareaSchema).not.toHaveProperty("x-placeholder");
+    expect(emailSchema).not.toHaveProperty("x-placeholder");
   });
 
   it("keeps nested object properties inside the object field", () => {

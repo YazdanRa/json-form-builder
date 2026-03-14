@@ -15,7 +15,9 @@ This project is a client-only form builder for assembling a constrained subset o
 
 - Supported field types: `string`, `textarea`, `number`, `integer`, `boolean`, `email`, `date`, `enum`, `object`, `array_string`, `array_object`
 - `object` and `array_object` create real JSON Schema nesting.
-- Conditional rules are equality-based only and are scoped to the current logical object scope. Objects and array items create their own scopes.
+- Generated output is standard JSON Schema Draft 2020-12 only.
+- Conditional visibility is expressed with native `allOf` / `if` / `then` branches that promote fields into `required` when their rules match.
+- The preview hides fields whose condition branches are currently inactive.
 
 ## Module Layout
 
@@ -28,7 +30,6 @@ This project is a client-only form builder for assembling a constrained subset o
 
 - Missing field keys resolve from `key || title || field_n`
 - Duplicate resolved keys are blocking within the same object scope
-- Incomplete conditional rules are ignored during export
 - Export actions are disabled when blocking validation issues are present
 
 ## Persistence
