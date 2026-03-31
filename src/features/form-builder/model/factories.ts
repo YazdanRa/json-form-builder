@@ -125,7 +125,7 @@ export function createInitialFormDefinition(): FormDefinition {
         type: "object",
         required: false,
         options: [],
-        conditions: [{ ...createConditionRule(), dependsOn: "request_type", equals: "Bug" }],
+        conditions: [{ ...createConditionRule(), dependsOn: "request_type", operator: "equals", value: "Bug" }],
         children: [
           {
             id: crypto.randomUUID(),

@@ -55,7 +55,16 @@ describe("buildSchema", () => {
     const optionalField = createField("object");
     optionalField.key = "bug_details";
     optionalField.title = "Bug Details";
-    optionalField.conditions = [{ id: "condition-1", dependsOn: "request_type", equals: "Bug" }];
+    optionalField.conditions = [
+      {
+        id: "condition-1",
+        groupId: "group-1",
+        dependsOn: "request_type",
+        operator: "equals",
+        value: "Bug",
+        values: [],
+      },
+    ];
     optionalField.children = [createField("string")];
     optionalField.children[0].key = "steps";
     optionalField.children[0].title = "Steps";
@@ -99,7 +108,16 @@ describe("buildSchema", () => {
     conditionalField.key = "details";
     conditionalField.title = "Details";
     conditionalField.required = true;
-    conditionalField.conditions = [{ id: "condition-1", dependsOn: "request_type", equals: "Bug" }];
+    conditionalField.conditions = [
+      {
+        id: "condition-1",
+        groupId: "group-1",
+        dependsOn: "request_type",
+        operator: "equals",
+        value: "Bug",
+        values: [],
+      },
+    ];
 
     const schema = buildSchema({
       title: "Conditional required form",
@@ -116,5 +134,93 @@ describe("buildSchema", () => {
 
     expect(schema.properties.object_field?.type).toBe("object");
     expect(schema.properties.object_field?.properties?.child_name?.type).toBe("string");
+  });
+
+  it("exports grouped conditions with presence and enum membership checks", () => {
+    const reasonField = createField("enum");
+    reasonField.key = "reason_for_impact";
+    reasonField.title = "Reason";
+    reasonField.options = ["Lack of workers", "Productivity"];
+    reasonField.required = true;
+
+    const performanceField = createField("enum");
+    performanceField.key = "performance_concern";
+    performanceField.title = "Performance Concern";
+    performanceField.options = ["Workers", "Materials", "Both"];
+
+    const workersField = createField("string");
+    workersField.key = "workers_unavailable";
+    workersField.title = "Workers Unavailable";
+
+    const daysLostField = createField("string");
+    daysLostField.key = "days_lost";
+    daysLostField.title = "Days Lost";
+    daysLostField.conditions = [
+      {
+        id: "condition-1",
+        groupId: "group-1",
+        dependsOn: "reason_for_impact",
+        operator: "equals",
+        value: "Productivity",
+        values: [],
+      },
+      {
+        id: "condition-2",
+        groupId: "group-1",
+        dependsOn: "performance_concern",
+        operator: "one_of",
+        value: "",
+        values: ["Workers", "Both"],
+      },
+      {
+        id: "condition-3",
+        groupId: "group-2",
+        dependsOn: "reason_for_impact",
+        operator: "equals",
+        value: "Lack of workers",
+        values: [],
+      },
+      {
+        id: "condition-4",
+        groupId: "group-2",
+        dependsOn: "workers_unavailable",
+        operator: "present",
+        value: "",
+        values: [],
+      },
+    ];
+
+    const schema = buildSchema({
+      title: "Conditional form",
+      description: "",
+      fields: [reasonField, performanceField, workersField, daysLostField],
+    });
+
+    expect(schema.allOf).toEqual([
+      {
+        if: {
+          properties: {
+            reason_for_impact: { const: "Productivity" },
+            performance_concern: { enum: ["Workers", "Both"] },
+          },
+          required: ["reason_for_impact", "performance_concern"],
+        },
+        then: {
+          required: ["days_lost"],
+        },
+      },
+      {
+        if: {
+          properties: {
+            reason_for_impact: { const: "Lack of workers" },
+            workers_unavailable: {},
+          },
+          required: ["reason_for_impact", "workers_unavailable"],
+        },
+        then: {
+          required: ["days_lost"],
+        },
+      },
+    ]);
   });
 });

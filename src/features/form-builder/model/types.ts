@@ -11,10 +11,15 @@ export type FieldType =
   | "array_string"
   | "array_object";
 
+export type ConditionOperator = "equals" | "present" | "one_of";
+
 export interface ConditionRule {
   id: string;
+  groupId: string;
   dependsOn: string;
-  equals: string;
+  operator: ConditionOperator;
+  value: string;
+  values: string[];
 }
 
 export interface FormField {
@@ -58,7 +63,7 @@ export interface ValidationResult {
 
 export interface JsonSchemaCondition {
   if: {
-    properties: Record<string, { const: string }>;
+    properties: Record<string, { const?: string; enum?: string[] }>;
     required: string[];
   };
   then: {

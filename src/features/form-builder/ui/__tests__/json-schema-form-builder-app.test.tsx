@@ -3,7 +3,15 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { FORM_BUILDER_STORAGE_KEY } from "../../lib/storage";
+import { buildSchema, createInitialFormDefinition } from "../../model";
 import { JsonSchemaFormBuilderApp } from "../json-schema-form-builder-app";
+
+async function pasteJson(user: ReturnType<typeof userEvent.setup>, value: string) {
+  const input = screen.getByLabelText("Paste JSON");
+  await user.clear(input);
+  await user.click(input);
+  await user.paste(value);
+}
 
 describe("JsonSchemaFormBuilderApp", () => {
   beforeEach(() => {
@@ -137,5 +145,97 @@ describe("JsonSchemaFormBuilderApp", () => {
 
     expect(within(bugDetailsCard).getAllByText("Always Required")[0]).toBeInTheDocument();
     expect(alwaysRequiredSwitch).toBeDisabled();
+  });
+
+  it("imports pasted draft json into the builder", async () => {
+    const user = userEvent.setup();
+    render(<JsonSchemaFormBuilderApp />);
+
+    await pasteJson(
+      user,
+      JSON.stringify({
+        title: "Imported title",
+        description: "Imported description",
+        fields: [
+          {
+            id: "field-1",
+            key: "request_summary",
+            title: "Request Summary",
+            description: "",
+            type: "textarea",
+            required: true,
+            options: [],
+            children: [],
+            conditions: [],
+          },
+        ],
+      }),
+    );
+    await user.click(screen.getByRole("button", { name: "Import JSON" }));
+
+    expect(screen.getByLabelText("Form title")).toHaveValue("Imported title");
+    expect(screen.getByLabelText("Form description")).toHaveValue("Imported description");
+    expect(screen.getByDisplayValue("Request Summary")).toBeInTheDocument();
+    expect(screen.getByText("Imported JSON into the builder.")).toBeInTheDocument();
+  });
+
+  it("imports exported schema into editable builder fields", async () => {
+    const user = userEvent.setup();
+    render(<JsonSchemaFormBuilderApp />);
+
+    await pasteJson(user, JSON.stringify(buildSchema(createInitialFormDefinition())));
+    await user.click(screen.getByRole("button", { name: "Import JSON" }));
+
+    expect(screen.getByDisplayValue("Contact Details")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Request Type")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Team Members")).toBeInTheDocument();
+  });
+
+  it("preserves the current draft when pasted json is invalid", async () => {
+    const user = userEvent.setup();
+    render(<JsonSchemaFormBuilderApp />);
+
+    await user.clear(screen.getByLabelText("Form title"));
+    await user.type(screen.getByLabelText("Form title"), "Current draft");
+
+    await pasteJson(user, "{");
+    await user.click(screen.getByRole("button", { name: "Import JSON" }));
+
+    expect(screen.getByLabelText("Form title")).toHaveValue("Current draft");
+    expect(screen.getByText("Pasted text is not valid JSON.")).toBeInTheDocument();
+  });
+
+  it("clears prior preview answers after a successful import", async () => {
+    const user = userEvent.setup();
+    render(<JsonSchemaFormBuilderApp />);
+
+    const previewPanel = screen.getByTestId("preview-panel");
+    const fullNameInput = within(previewPanel).getByLabelText("Full Name");
+    await user.type(fullNameInput, "Taylor");
+    expect(fullNameInput).toHaveValue("Taylor");
+
+    await pasteJson(
+      user,
+      JSON.stringify({
+        title: "Replacement form",
+        description: "",
+        fields: [
+          {
+            id: "field-1",
+            key: "full_name",
+            title: "Full Name",
+            description: "",
+            type: "string",
+            required: false,
+            options: [],
+            children: [],
+            conditions: [],
+          },
+        ],
+      }),
+    );
+    await user.click(screen.getByRole("button", { name: "Import JSON" }));
+
+    expect(within(screen.getByTestId("preview-panel")).getByLabelText("Full Name")).toHaveValue("");
   });
 });

@@ -17,6 +17,7 @@ import {
   buildSchema,
   createInitialFormDefinition,
   formBuilderReducer,
+  importFormDefinitionJson,
   validateFormDefinition,
   type FormDefinition,
 } from "../model";
@@ -27,6 +28,11 @@ export function JsonSchemaFormBuilderApp() {
   const seedForm = useMemo(() => createInitialFormDefinition(), []);
   const [form, dispatch] = useReducer(formBuilderReducer, seedForm, loadStoredFormDefinition);
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
+  const [importText, setImportText] = useState("");
+  const [importState, setImportState] = useState<{ status: "idle" | "success" | "error"; message: string }>({
+    status: "idle",
+    message: "",
+  });
   const [previewValues, setPreviewValues] = useState<PreviewScope>({});
 
   useEffect(() => {
@@ -76,6 +82,20 @@ export function JsonSchemaFormBuilderApp() {
     clearStoredFormDefinition();
     dispatch({ type: "reset", form: createInitialFormDefinition() });
     setCopyState("idle");
+    setImportState({ status: "idle", message: "" });
+    setPreviewValues({});
+  }
+
+  function handleImportJson() {
+    const result = importFormDefinitionJson(importText);
+    if (!result.ok) {
+      setImportState({ status: "error", message: result.error });
+      return;
+    }
+
+    dispatch({ type: "hydrate", form: result.form });
+    setCopyState("idle");
+    setImportState({ status: "success", message: "Imported JSON into the builder." });
     setPreviewValues({});
   }
 
@@ -146,6 +166,40 @@ export function JsonSchemaFormBuilderApp() {
                       placeholder="Add a short description"
                       className="min-h-[96px]"
                     />
+                  </div>
+                </div>
+
+                <div className="space-y-3 rounded-[24px] border border-slate-300/70 bg-muted/55 p-4">
+                  <div className="space-y-1">
+                    <Label htmlFor="import-json">Paste JSON</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Import either a saved builder draft or supported exported JSON Schema.
+                    </p>
+                  </div>
+                  <Textarea
+                    id="import-json"
+                    value={importText}
+                    onChange={(event) => {
+                      setImportText(event.target.value);
+                      setImportState({ status: "idle", message: "" });
+                    }}
+                    placeholder='{"title":"Imported form","description":"","fields":[]}'
+                    className="min-h-[180px] font-mono text-sm"
+                  />
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <Button type="button" variant="outline" onClick={handleImportJson} disabled={!importText.trim()}>
+                      <FileJson className="h-4 w-4" /> Import JSON
+                    </Button>
+                    {importState.status !== "idle" ? (
+                      <div
+                        className={cn(
+                          "text-sm",
+                          importState.status === "error" ? "text-destructive" : "text-emerald-700",
+                        )}
+                      >
+                        {importState.message}
+                      </div>
+                    ) : null}
                   </div>
                 </div>
 

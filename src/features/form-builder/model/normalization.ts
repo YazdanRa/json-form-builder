@@ -1,5 +1,5 @@
 import { createInitialFormDefinition } from "./factories";
-import type { FieldType, FormDefinition, FormField } from "./types";
+import type { ConditionOperator, FieldType, FormDefinition, FormField } from "./types";
 
 type LegacyFieldType = FieldType | "section";
 
@@ -12,8 +12,37 @@ interface LegacyFormDefinition extends Omit<FormDefinition, "fields"> {
   fields: LegacyFormField[];
 }
 
+interface LegacyConditionRule {
+  id?: string;
+  groupId?: string;
+  dependsOn?: string;
+  operator?: ConditionOperator;
+  value?: string;
+  values?: string[];
+  equals?: string;
+}
+
+function normalizeCondition(condition: LegacyConditionRule, fallbackGroupId: string) {
+  const operator = condition.operator ?? "equals";
+
+  return {
+    id: typeof condition.id === "string" && condition.id ? condition.id : crypto.randomUUID(),
+    groupId: typeof condition.groupId === "string" && condition.groupId ? condition.groupId : fallbackGroupId,
+    dependsOn: typeof condition.dependsOn === "string" ? condition.dependsOn : "",
+    operator,
+    value:
+      typeof condition.value === "string"
+        ? condition.value
+        : typeof condition.equals === "string"
+          ? condition.equals
+          : "",
+    values: Array.isArray(condition.values) ? condition.values.filter((value): value is string => typeof value === "string") : [],
+  };
+}
+
 function normalizeField(field: LegacyFormField): FormField {
   const rawField = field as LegacyFormField & { placeholder?: unknown };
+  const fallbackGroupId = crypto.randomUUID();
 
   return {
     id: rawField.id,
@@ -24,7 +53,9 @@ function normalizeField(field: LegacyFormField): FormField {
     required: rawField.required,
     options: Array.isArray(rawField.options) ? rawField.options : [],
     children: Array.isArray(rawField.children) ? rawField.children.map(normalizeField) : [],
-    conditions: Array.isArray(rawField.conditions) ? rawField.conditions : [],
+    conditions: Array.isArray(rawField.conditions)
+      ? rawField.conditions.map((condition) => normalizeCondition(condition as LegacyConditionRule, fallbackGroupId))
+      : [],
   };
 }
 

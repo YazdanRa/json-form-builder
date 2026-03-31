@@ -1,4 +1,4 @@
-import { buildJsonSchemaCondition } from "./conditions";
+import { buildJsonSchemaConditions } from "./conditions";
 import { resolveFieldKey } from "./factories";
 import type { FormDefinition, FormField, JsonSchemaCondition, JsonSchemaDocument, JsonSchemaNode } from "./types";
 
@@ -89,9 +89,9 @@ function buildFieldCollection(fields: FormField[]) {
       required.push(key);
     }
 
-    const conditionBlock = buildJsonSchemaCondition(key, field.conditions);
-    if (conditionBlock) {
-      allOf.push(conditionBlock);
+    const conditionBlocks = buildJsonSchemaConditions(key, field.conditions);
+    if (conditionBlocks.length) {
+      allOf.push(...conditionBlocks);
     }
   });
 

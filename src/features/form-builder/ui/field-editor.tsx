@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
   FIELD_TYPES,
+  createConditionGroupId,
   createConditionRule,
   createField,
   createTypeChangePatch,
@@ -32,6 +33,16 @@ interface FieldEditorProps {
   onAddChild: () => void;
 }
 
+function groupConditionsById(conditions: FormField["conditions"]) {
+  const grouped = new Map<string, FormField["conditions"]>();
+  for (const condition of conditions) {
+    const groupId = condition.groupId || condition.id;
+    grouped.set(groupId, [...(grouped.get(groupId) ?? []), condition]);
+  }
+
+  return [...grouped.entries()];
+}
+
 export function FieldEditor({
   field,
   scopeFields,
@@ -48,6 +59,7 @@ export function FieldEditor({
   const dependencyOptions = getFlatDependencyOptions(scopeFields).filter((option) => option.id !== field.id);
   const issues = issuesByField[field.id] ?? [];
   const isConditionControlled = field.conditions.length > 0;
+  const conditionGroups = groupConditionsById(field.conditions);
   const fieldLabel = field.title.trim() || field.key.trim() || "Untitled field";
   const panelId = `field-${field.id}-panel`;
 
@@ -254,69 +266,162 @@ export function FieldEditor({
                 <div>
                   <div className="text-sm font-semibold">Conditional visibility</div>
                   <div className="text-xs text-muted-foreground">
-                    Promote this field into a native JSON Schema `if` / `then` branch when another field equals a value.
+                    Each group is an AND block. If any group matches, the field becomes required in the exported JSON Schema.
                   </div>
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onChange({ conditions: [...field.conditions, createConditionRule()], required: false })}
-                >
-                  <Plus className="h-4 w-4" /> Add rule
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      onChange({
+                        conditions: [
+                          ...field.conditions,
+                          createConditionRule(conditionGroups[0]?.[0] ?? createConditionGroupId()),
+                        ],
+                        required: false,
+                      })
+                    }
+                  >
+                    <Plus className="h-4 w-4" /> Add rule
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      onChange({
+                        conditions: [...field.conditions, createConditionRule(createConditionGroupId())],
+                        required: false,
+                      })
+                    }
+                  >
+                    <Plus className="h-4 w-4" /> Add group
+                  </Button>
+                </div>
               </div>
 
-              {field.conditions.length ? (
+              {conditionGroups.length ? (
                 <div className="space-y-2">
-                  {field.conditions.map((condition, index) => (
-                    <div key={condition.id} className="grid gap-2 md:grid-cols-[1fr_1fr_auto]">
-                      <Select
-                        value={condition.dependsOn || "__none__"}
-                        onValueChange={(value) => {
-                          const next = [...field.conditions];
-                          next[index] = { ...condition, dependsOn: value === "__none__" ? "" : value };
-                          onChange({ conditions: next, required: false });
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Depends on" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="__none__">Select field</SelectItem>
-                          {dependencyOptions.map((option) => (
-                            <SelectItem key={option.id} value={option.key}>
-                              {option.path}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                  {conditionGroups.map(([groupId, groupConditions], groupIndex) => (
+                    <div key={groupId} className="space-y-2 rounded-[18px] border border-border/80 bg-muted/45 p-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                          Group {groupIndex + 1}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            onChange({
+                              conditions: [...field.conditions, createConditionRule(groupId)],
+                              required: false,
+                            })
+                          }
+                        >
+                          <Plus className="h-4 w-4" /> Add rule
+                        </Button>
+                      </div>
 
-                      <Input
-                        aria-label={`Condition ${index + 1} equals`}
-                        value={condition.equals}
-                        onChange={(event) => {
-                          const next = [...field.conditions];
-                          next[index] = { ...condition, equals: event.target.value };
-                          onChange({ conditions: next, required: false });
-                        }}
-                        placeholder="Equals"
-                      />
+                      {groupConditions.map((condition, ruleIndex) => {
+                        const conditionIndex = field.conditions.findIndex((item) => item.id === condition.id);
 
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        aria-label={`Remove condition ${index + 1}`}
-                        onClick={() =>
-                          onChange({
-                            conditions: field.conditions.filter((_, conditionIndex) => conditionIndex !== index),
-                            required: false,
-                          })
-                        }
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                        return (
+                          <div key={condition.id} className="grid gap-2 md:grid-cols-[1fr_180px_1fr_auto]">
+                            <Select
+                              value={condition.dependsOn || "__none__"}
+                              onValueChange={(value) => {
+                                const next = [...field.conditions];
+                                next[conditionIndex] = { ...condition, dependsOn: value === "__none__" ? "" : value };
+                                onChange({ conditions: next, required: false });
+                              }}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Depends on" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="__none__">Select field</SelectItem>
+                                {dependencyOptions.map((option) => (
+                                  <SelectItem key={option.id} value={option.key}>
+                                    {option.path}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+
+                            <Select
+                              value={condition.operator}
+                              onValueChange={(value) => {
+                                const next = [...field.conditions];
+                                next[conditionIndex] = {
+                                  ...condition,
+                                  operator: value as typeof condition.operator,
+                                  value: value === "equals" ? condition.value || condition.values[0] || "" : "",
+                                  values: value === "one_of" ? (condition.values.length ? condition.values : condition.value ? [condition.value] : []) : [],
+                                };
+                                onChange({ conditions: next, required: false });
+                              }}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="equals">Equals</SelectItem>
+                                <SelectItem value="present">Is present</SelectItem>
+                                <SelectItem value="one_of">Any of</SelectItem>
+                              </SelectContent>
+                            </Select>
+
+                            {condition.operator === "present" ? (
+                              <div className="flex items-center rounded-[16px] border border-border/80 bg-white/82 px-3 text-sm text-muted-foreground">
+                                Matches when the field has a value
+                              </div>
+                            ) : (
+                              <Input
+                                aria-label={
+                                  condition.operator === "one_of"
+                                    ? `Condition ${ruleIndex + 1} any of`
+                                    : `Condition ${ruleIndex + 1} equals`
+                                }
+                                value={condition.operator === "one_of" ? condition.values.join(", ") : condition.value}
+                                onChange={(event) => {
+                                  const next = [...field.conditions];
+                                  next[conditionIndex] = {
+                                    ...condition,
+                                    value: condition.operator === "equals" ? event.target.value : "",
+                                    values:
+                                      condition.operator === "one_of"
+                                        ? event.target.value
+                                            .split(",")
+                                            .map((value) => value.trim())
+                                            .filter(Boolean)
+                                        : [],
+                                  };
+                                  onChange({ conditions: next, required: false });
+                                }}
+                                placeholder={condition.operator === "one_of" ? "Value 1, Value 2" : "Equals"}
+                              />
+                            )}
+
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              aria-label={`Remove condition ${ruleIndex + 1}`}
+                              onClick={() =>
+                                onChange({
+                                  conditions: field.conditions.filter((item) => item.id !== condition.id),
+                                  required: false,
+                                })
+                              }
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        );
+                      })}
                     </div>
                   ))}
                 </div>
